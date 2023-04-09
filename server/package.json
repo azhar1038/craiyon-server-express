@@ -1,0 +1,37 @@
+{
+  "name": "craiyon",
+  "version": "1.0.0",
+  "description": "Craiyon: From words to wonders.",
+  "main": "dist/app.js",
+  "author": "Azhar",
+  "license": "MIT",
+  "scripts": {
+    "start": "node ./dist/app.js",
+    "build": "tsc",
+    "dev": "tsx watch ./src/app.ts",
+    "lint": "lint-staged",
+    "format": "eslint src/**/*.ts --fix"
+  },
+  "dependencies": {
+    "bcrypt": "^5.1.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.0",
+    "winston": "^3.8.2"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^5.0.0",
+    "@types/cors": "^2.8.13",
+    "@types/express": "^4.17.17",
+    "@types/jsonwebtoken": "^9.0.1",
+    "@typescript-eslint/eslint-plugin": "^5.56.0",
+    "@typescript-eslint/parser": "^5.56.0",
+    "eslint": "^8.36.0",
+    "husky": "^8.0.0",
+    "lint-staged": "^13.2.1",
+    "prettier": "^2.8.6",
+    "tsx": "^3.12.6",
+    "typescript": "^5.0.2"
+  }
+}
