@@ -10,9 +10,11 @@
     "build": "tsc",
     "dev": "tsx watch ./src/app.ts",
     "lint": "lint-staged",
-    "format": "eslint src/**/*.ts --fix"
+    "format": "eslint src/**/*.ts --fix",
+    "migrate:dev": "dotenv -e .env.development -- prisma migrate dev --schema ./src/prisma/schema.prisma"
   },
   "dependencies": {
+    "@prisma/client": "^4.12.0",
     "bcrypt": "^5.1.0",
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
@@ -28,10 +30,12 @@
     "@types/node": "^18.15.11",
     "@typescript-eslint/eslint-plugin": "^5.56.0",
     "@typescript-eslint/parser": "^5.56.0",
+    "dotenv-cli": "^7.2.1",
     "eslint": "^8.36.0",
     "husky": "^8.0.0",
     "lint-staged": "^13.2.1",
     "prettier": "^2.8.6",
+    "prisma": "^4.12.0",
     "tsx": "^3.12.6",
     "typescript": "^5.0.2"
   }

@@ -13,5 +13,6 @@ export class AuthRoutes implements ComponentRoutes<AuthController> {
 
   initRoutes(): void {
     this.router.post('/login', this.controller.loginUser);
+    this.router.post('/register', this.controller.registerUser);
   }
 }
