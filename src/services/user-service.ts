@@ -1,40 +1,52 @@
 import { PrismaClient } from '@prisma/client';
 import { HashService } from './hash-service';
+import { UserAlreadyExistsError, UserDoesNotExistsError } from '../exceptions/user-error';
 
 export class UserService {
-  public async getPassword(email: string): Promise<string> {
-    const prisma = new PrismaClient();
+  readonly hashService: HashService = new HashService();
+  readonly prisma: PrismaClient = new PrismaClient();
 
-    try {
-      const user = await prisma.user.findFirst({
-        where: {
-          email,
-        },
-      });
-      if (user) {
-        return user.password;
-      }
-    } catch (error) {
-      throw error;
+  verifyUser = async (email: string, password: string): Promise<boolean> => {
+    const user = await this.prisma.user.findFirst({
+      select: {
+        email: true,
+        password: true,
+      },
+      where: {
+        email,
+      },
+    });
+
+    if (!user) throw new UserDoesNotExistsError();
+
+    if (this.hashService.compareHash(password, user.password)) {
+      return true;
     }
 
-    return '';
-  }
+    return false;
+  };
 
-  public async addUser(email: string, name: string, password: string): Promise<void> {
-    const prisma = new PrismaClient();
-    const hashService: HashService = new HashService();
-    const hashedPassword = await hashService.getHash(password);
-    try {
-      await prisma.user.create({
-        data: {
-          name,
-          email,
-          password: hashedPassword,
-        },
-      });
-    } catch (error) {
-      throw error;
-    }
-  }
+  addUser = async (email: string, name: string, password: string): Promise<void> => {
+    // Check if user already exists
+    const user = await this.prisma.user.findFirst({
+      select: {
+        id: true,
+      },
+      where: {
+        email,
+      },
+    });
+
+    if (user) throw new UserAlreadyExistsError();
+
+    // Add New user
+    const hashedPassword = await this.hashService.getHash(password);
+    await this.prisma.user.create({
+      data: {
+        name,
+        email,
+        password: hashedPassword,
+      },
+    });
+  };
 }
