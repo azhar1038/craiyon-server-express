@@ -11,3 +11,10 @@ export class UserDoesNotExistsError extends Error {
     Object.setPrototypeOf(this, UserDoesNotExistsError.prototype);
   }
 }
+
+export class UserCredentialsInvalidError extends Error {
+  constructor() {
+    super('Email or Password is incorrect');
+    Object.setPrototypeOf(this, UserCredentialsInvalidError.prototype);
+  }
+}

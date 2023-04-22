@@ -13,6 +13,6 @@ export class UserRoutes implements ComponentRoutes<UserController> {
   }
 
   initRoutes(): void {
-    this.router.get('/details', authenticate, this.controller.getUserDetails);
+    this.router.get('/', authenticate, this.controller.getUserDetails);
   }
 }

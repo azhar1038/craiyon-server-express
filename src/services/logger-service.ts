@@ -19,6 +19,7 @@ export const logger = createLogger({
     format.timestamp({
       format: 'YYYY-MM-DD HH:mm:ss',
     }),
+    format.errors({ stack: true }),
     format.printf((info) => `${info.timestamp} [${info.level}]: ${info.message}`),
   ),
   transports: [
@@ -42,7 +43,12 @@ if (env.NODE_ENV !== 'production') {
     new transports.Console({
       format: format.combine(
         format.colorize(),
-        format.printf((info) => `${info.timestamp} ${info.level}: ${info.message}`),
+        format.printf((info) => {
+          if (info.stack) {
+            return `${info.timestamp} ${info.level}: ${info.stack}`;
+          }
+          return `${info.timestamp} ${info.level}: ${info.message}`;
+        }),
       ),
       level: 'debug',
     }),

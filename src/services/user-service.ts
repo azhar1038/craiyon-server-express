@@ -1,14 +1,16 @@
 import { PrismaClient } from '@prisma/client';
 import { HashService } from './hash-service';
-import { UserAlreadyExistsError, UserDoesNotExistsError } from '../exceptions/user-error';
+import { UserAlreadyExistsError, UserCredentialsInvalidError, UserDoesNotExistsError } from '../exceptions/user-error';
+import { UserModel } from '../models/user_model';
 
 export class UserService {
   readonly hashService: HashService = new HashService();
   readonly prisma: PrismaClient = new PrismaClient();
 
-  verifyUser = async (email: string, password: string): Promise<boolean> => {
+  verifyUser = async (email: string, password: string): Promise<number> => {
     const user = await this.prisma.user.findFirst({
       select: {
+        id: true,
         email: true,
         password: true,
       },
@@ -20,15 +22,15 @@ export class UserService {
     if (!user) throw new UserDoesNotExistsError();
 
     if (this.hashService.compareHash(password, user.password)) {
-      return true;
+      return user.id;
     }
 
-    return false;
+    throw new UserCredentialsInvalidError();
   };
 
-  addUser = async (email: string, name: string, password: string): Promise<void> => {
+  addUser = async (email: string, name: string, password: string): Promise<UserModel> => {
     // Check if user already exists
-    const user = await this.prisma.user.findFirst({
+    let user = await this.prisma.user.findFirst({
       select: {
         id: true,
       },
@@ -41,12 +43,35 @@ export class UserService {
 
     // Add New user
     const hashedPassword = await this.hashService.getHash(password);
-    await this.prisma.user.create({
+    user = await this.prisma.user.create({
       data: {
         name,
         email,
         password: hashedPassword,
       },
     });
+
+    return {
+      name,
+      email,
+      id: user.id,
+    };
+  };
+
+  getUser = async (id: number): Promise<UserModel> => {
+    const user = await this.prisma.user.findFirst({
+      where: {
+        id,
+      },
+    });
+
+    if (!user) throw new UserDoesNotExistsError();
+
+    return {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+    };
   };
 }

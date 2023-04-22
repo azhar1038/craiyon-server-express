@@ -2,7 +2,11 @@ import { Request, Response } from 'express';
 import { AuthService } from '../../../../services/auth-service';
 import { UserService } from '../../../../services/user-service';
 import { HashService } from '../../../../services/hash-service';
-import { UserAlreadyExistsError, UserDoesNotExistsError } from '../../../../exceptions/user-error';
+import {
+  UserAlreadyExistsError,
+  UserCredentialsInvalidError,
+  UserDoesNotExistsError,
+} from '../../../../exceptions/user-error';
 import { logger } from '../../../../services/logger-service';
 
 export class AuthController {
@@ -20,23 +24,22 @@ export class AuthController {
     }
 
     try {
-      if (!(await this.userService.verifyUser(email, password))) {
-        res.status(401).json({ error: 'Incorrect email or password' });
-        return;
-      }
-
-      const accessToken = this.authService.createToken({ email });
+      const userId = await this.userService.verifyUser(email, password);
+      const accessToken = this.authService.createToken({ id: userId });
       res.json({ token: accessToken });
     } catch (error) {
       let msg = 'Failed to login, please try again later';
       let statusCode = 500;
-      if (error instanceof UserDoesNotExistsError) {
+      if (error instanceof UserCredentialsInvalidError) {
+        msg = 'Incorrect email or password';
+        statusCode = 401;
+      } else if (error instanceof UserDoesNotExistsError) {
         msg = 'User does not exists, please register first';
         statusCode = 404;
       } else {
         logger.error(error);
       }
-      res.status(statusCode).json({ error: msg });
+      res.status(statusCode).json(msg);
     }
   };
 
@@ -51,8 +54,9 @@ export class AuthController {
     }
 
     try {
-      await this.userService.addUser(email, name, password);
-      res.json({ msg: 'User created' });
+      const user = await this.userService.addUser(email, name, password);
+      const accessToken = this.authService.createToken({ id: user.id });
+      res.status(201).json({ token: accessToken });
     } catch (error) {
       let msg = 'Something went wrong';
       let statusCode = 500;
@@ -62,7 +66,7 @@ export class AuthController {
       } else {
         logger.error(error);
       }
-      res.status(statusCode).json({ error: msg });
+      res.status(statusCode).json(msg);
     }
   };
 }

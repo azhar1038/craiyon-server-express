@@ -1,6 +1,7 @@
 import cors from 'cors';
 import { Application, json } from 'express';
 import { env } from '../../config/globals';
+import { apiResponseMiddleware } from './response-middeware';
 
 export function registerMiddleware(app: Application): void {
   const whitelist: string[] = [env.DOMAIN];
@@ -21,4 +22,5 @@ export function registerMiddleware(app: Application): void {
   }
 
   app.use(json());
+  app.use(apiResponseMiddleware);
 }
