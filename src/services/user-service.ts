@@ -1,7 +1,8 @@
 import { PrismaClient } from '@prisma/client';
 import { HashService } from './hash-service';
 import { UserAlreadyExistsError, UserCredentialsInvalidError, UserDoesNotExistsError } from '../exceptions/user-error';
-import { UserModel } from '../models/user_model';
+import { UserModel } from '../models/user-model';
+import { GeneratedImageModel } from '../models/generated-image-model';
 
 export class UserService {
   readonly hashService: HashService = new HashService();
@@ -73,5 +74,27 @@ export class UserService {
       email: user.email,
       role: user.role,
     };
+  };
+
+  getUserGeneratedImages = async (id: number, limit: number, page: number): Promise<GeneratedImageModel[]> => {
+    const images = await this.prisma.generatedImage.findMany({
+      where: {
+        userId: id,
+      },
+      skip: page * limit,
+      take: limit,
+    });
+
+    return images.map((img) => {
+      return {
+        id: img.id,
+        prompt: img.prompt,
+        isPrivate: img.isPrivate,
+        url: img.url,
+        likes: img.likes,
+        model: img.model,
+        resolution: img.resolution,
+      };
+    });
   };
 }

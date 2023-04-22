@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { AuthService } from '../../services/auth-service';
-import { InvalidTokenError } from '../../exceptions/auth-errors';
+import { InvalidTokenError, MissingTokenError } from '../../exceptions/auth-errors';
 import { logger } from '../../services/logger-service';
 
 export interface CustomRequest extends Request {
@@ -11,7 +11,8 @@ export const authenticate = (req: CustomRequest, res: Response, next: NextFuncti
   const authService: AuthService = new AuthService();
   try {
     const token = req.headers.authorization?.replace('Bearer ', '');
-    const userId = authService.verifyToken(token ?? '');
+    if (!token) throw new MissingTokenError();
+    const userId = authService.verifyToken(token);
     req.userId = userId;
     next();
   } catch (error) {
@@ -19,6 +20,8 @@ export const authenticate = (req: CustomRequest, res: Response, next: NextFuncti
     const statusCode = 401;
     if (error instanceof InvalidTokenError) {
       msg = 'Invalid token provided';
+    } else if (error instanceof MissingTokenError) {
+      msg = error.message;
     } else {
       logger.error(error);
     }

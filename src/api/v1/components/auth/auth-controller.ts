@@ -2,12 +2,12 @@ import { Request, Response } from 'express';
 import { AuthService } from '../../../../services/auth-service';
 import { UserService } from '../../../../services/user-service';
 import { HashService } from '../../../../services/hash-service';
+import { logger } from '../../../../services/logger-service';
 import {
   UserAlreadyExistsError,
   UserCredentialsInvalidError,
   UserDoesNotExistsError,
 } from '../../../../exceptions/user-error';
-import { logger } from '../../../../services/logger-service';
 
 export class AuthController {
   readonly authService: AuthService = new AuthService();
@@ -19,7 +19,7 @@ export class AuthController {
     const password = req.body.password;
 
     if (!email || !password) {
-      res.status(400).json({ error: 'Missing Email or Password' });
+      res.status(400).json('Missing Email or Password');
       return;
     }
 
@@ -49,7 +49,7 @@ export class AuthController {
     const password = req.body.password;
 
     if (!email || !name || !password) {
-      res.status(400).json({ error: 'Please provide all data: name, email and password' });
+      res.status(400).json('Please provide all data: name, email and password');
       return;
     }
 

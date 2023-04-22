@@ -14,5 +14,6 @@ export class UserRoutes implements ComponentRoutes<UserController> {
 
   initRoutes(): void {
     this.router.get('/', authenticate, this.controller.getUserDetails);
+    this.router.get('/generated-images', authenticate, this.controller.getImages);
   }
 }
