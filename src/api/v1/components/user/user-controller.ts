@@ -8,9 +8,9 @@ export class UserController {
   readonly userService = new UserService();
 
   getUserDetails = async (req: CustomRequest, res: Response) => {
-    const userId = req.userId!!; // ID must exists in the req
-
     try {
+      const userId = req.userId ?? -1;
+
       const user = await this.userService.getUser(userId);
       res.json(user);
     } catch (error) {

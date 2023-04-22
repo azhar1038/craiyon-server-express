@@ -16,7 +16,7 @@ export const authenticate = (req: CustomRequest, res: Response, next: NextFuncti
     next();
   } catch (error) {
     let msg = 'Authentication failed';
-    let statusCode = 401;
+    const statusCode = 401;
     if (error instanceof InvalidTokenError) {
       msg = 'Invalid token provided';
     } else {
