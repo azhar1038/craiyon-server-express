@@ -1,5 +1,6 @@
 dist
 logs
+generatedimages
 node_modules
 
 .env.production

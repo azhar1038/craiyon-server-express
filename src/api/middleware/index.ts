@@ -23,4 +23,5 @@ export function registerMiddleware(app: Application): void {
 
   app.use(json());
   app.use(apiResponseMiddleware);
+  // app.use('/public', express.static(join(__dirname, 'public')));
 }
