@@ -3,9 +3,11 @@ import { CustomRequest } from '../../../middleware/auth-middleware';
 import { UserService } from '../../../../services/user-service';
 import { logger } from '../../../../services/logger-service';
 import { UserDoesNotExistsError } from '../../../../exceptions/user-error';
+import { ImageService } from '../../../../services/image-service';
 
 export class UserController {
   readonly userService = new UserService();
+  readonly imageService = new ImageService();
 
   getUserDetails = async (req: CustomRequest, res: Response) => {
     try {
@@ -34,10 +36,10 @@ export class UserController {
       const userId = req.userId;
       if (!userId) throw new UserDoesNotExistsError();
 
-      const page = req.body.page ?? 0;
-      const limit = req.body.limit ?? 10;
+      const page: number = req.body.page ?? 0;
+      const limit: number = req.body.limit ?? 10;
 
-      const images = await this.userService.getUserGeneratedImages(userId, limit, page);
+      const images = await this.imageService.getUserGeneratedImages(userId, limit, page);
       res.json(images);
     } catch (error) {
       let msg = 'Failed to fetch images';

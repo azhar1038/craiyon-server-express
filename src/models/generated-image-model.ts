@@ -6,4 +6,5 @@ export type GeneratedImageModel = {
   likes: number;
   model: string;
   resolution: string;
+  likedByUser?: boolean;
 };
