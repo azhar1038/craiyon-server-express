@@ -2,6 +2,7 @@ dist
 logs
 generatedimages
 node_modules
+.yarn
 
 .env.production
 .env.development
