@@ -11,6 +11,7 @@
     "dev": "tsx watch ./src/app.ts",
     "lint": "lint-staged",
     "format": "eslint src/**/*.ts --fix",
+    "db-push": "dotenv -e .env.development -- prisma db push --schema ./src/prisma/schema.prisma",
     "migrate:dev": "dotenv -e .env.development -- prisma migrate dev --schema ./src/prisma/schema.prisma"
   },
   "dependencies": {

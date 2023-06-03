@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { AuthService } from '../../services/auth-service';
-import { InvalidTokenError, MissingTokenError } from '../../exceptions/auth-errors';
+import { InvalidTokenError, MissingTokenError } from '../../exceptions/auth-error';
 import { logger } from '../../services/logger-service';
 
 export interface CustomRequest extends Request {

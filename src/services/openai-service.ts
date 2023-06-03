@@ -1,6 +1,7 @@
 import { Configuration, OpenAIApi } from 'openai';
 import { env } from '../config/globals';
 import { FileService } from './file-service';
+import { Resolution } from '../config/enums';
 
 export class OpenaiService {
   private openAiConfig = new Configuration({
@@ -9,9 +10,7 @@ export class OpenaiService {
   private openAi = new OpenAIApi(this.openAiConfig);
   private fileService = new FileService();
 
-  generateImage = async (prompt: string, resolution: string): Promise<string> => {
-    if (resolution !== '256x256' && resolution !== '512x512' && resolution !== '1024x1024') throw new Error();
-
+  generateImage = async (prompt: string, resolution: Resolution): Promise<string> => {
     const apiResponse = await this.openAi.createImage({
       prompt,
       n: 1,

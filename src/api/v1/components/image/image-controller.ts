@@ -3,29 +3,47 @@ import { CustomRequest } from '../../../middleware/auth-middleware';
 import { OpenaiService } from '../../../../services/openai-service';
 import { ImageService } from '../../../../services/image-service';
 import { logger } from '../../../../services/logger-service';
+import { NoImageError } from '../../../../exceptions/image-error';
+import { Model, Resolution, SortBy, SortOrder, getEnumFromString } from '../../../../config/enums';
 
 export class ImageController {
   private openaiService = new OpenaiService();
   private imageService = new ImageService();
 
   getImage = async (req: CustomRequest, res: Response) => {
-    const imageId = parseInt(req.params.id);
-    const imagePath = await this.imageService.resolvePath(imageId);
-    res.sendFile(imagePath);
+    try {
+      const imageId = Number(req.params.id);
+      if (Number.isNaN(imageId)) throw new NoImageError();
+      const userId = req.userId;
+      const imagePath = await this.imageService.resolvePath(userId, imageId);
+      res.sendFile(imagePath);
+    } catch (error) {
+      let statusCode = 500;
+      let msg = 'Something went wrong';
+
+      if (error instanceof NoImageError) {
+        statusCode = 404;
+        msg = error.message;
+      } else {
+        logger.error(error);
+      }
+      res.status(statusCode).json(msg);
+    }
   };
 
   getPublicImages = async (req: CustomRequest, res: Response) => {
     const userId = req.userId;
     const page: number = req.body.page ?? 0;
     const limit: number = req.body.limit ?? 10;
-    const sort: string = req.body.sort ?? 'like';
-    const order: string = req.body.order ?? 'desc';
-    if (sort !== 'like' && sort !== 'created') {
-      return res.status(400).json('Parameter sort can only be like or created');
+    const sort: SortBy | null = getEnumFromString(req.body.sort ?? 'like', SortBy);
+    const order: SortOrder | null = getEnumFromString(req.body.order ?? 'desc', SortOrder);
+    if (!sort) {
+      return res.status(400).json("Parameter sort can only be 'like' or 'created'");
     }
-    if (order !== 'asc' && order !== 'desc') {
-      return res.status(400).json('Parameter order can only be asc or desc');
+    if (!order) {
+      return res.status(400).json("Parameter order can only be 'asc' or 'desc'");
     }
+
     try {
       const images = await this.imageService.getPublicImages(userId, limit, page, sort, order);
       return res.json(images);
@@ -42,23 +60,27 @@ export class ImageController {
     if (!userId) return res.status(400).json('User ID is missing');
 
     const prompt: string = req.body.prompt;
-    if (!prompt) res.status(400).json('Prompt is missing, cannot generate image without prompt');
+    if (!prompt) return res.status(400).json('Prompt is missing, cannot generate image without prompt');
 
-    const model: string = req.body.model ?? 'DALLE';
-    if (model !== 'DALLE') res.status(400).json('Invalid model provided');
+    const model: Model | null = getEnumFromString(req.body.model ?? Model.DALLE, Model);
+    if (!model) return res.status(400).json('Invalid model provided');
 
-    const validResolution = ['256x256', '512x512', '1024x1024'];
-    const resolution: string = req.body.resolution ?? '256x256';
-    if (!validResolution.includes(resolution)) res.status(400).json('Invalid resolution provided');
+    const resolution: Resolution | null = getEnumFromString(req.body.resolution ?? Resolution.RES_256x256, Resolution);
+    if (resolution === null) {
+      return res.status(400).json("Resolution only supports '256x256', '512x512' or '1024x1024'");
+    }
 
     try {
-      const filePath = await this.openaiService.generateImage(prompt, resolution);
-
-      const imageId = await this.imageService.saveImage(userId, prompt, filePath);
+      let filePath = '';
+      if (model === Model.DALLE) {
+        filePath = await this.openaiService.generateImage(prompt, resolution);
+      }
+      const imageId = await this.imageService.saveImage(userId, prompt, model, resolution, filePath);
 
       res.json({ imageId });
     } catch (error) {
       logger.error(error);
+      res.status(500).json('Failed to generate image');
     }
   };
 
@@ -79,8 +101,15 @@ export class ImageController {
       }
       res.json(msg);
     } catch (error) {
-      logger.error(error);
-      res.status(500).json('Failed to favorite');
+      let msg = 'Failed to fetch images';
+      let statusCode = 500;
+      if (error instanceof NoImageError) {
+        statusCode = 404;
+        msg = error.message;
+      } else {
+        logger.error(error);
+      }
+      res.status(statusCode).json(msg);
     }
   };
 }

@@ -14,13 +14,13 @@ enum UserRole {
 }
 
 enum GeneratorModel {
-  DALLE2
+  DALLE
 }
 
 enum ImageResolution {
-  RES_256x256
-  RES_512x512
-  RES_1024x1024
+  RES_256x256   @map("256x256")
+  RES_512x512   @map("512x512")
+  RES_1024x1024 @map("1024x1024")
 }
 
 model User {
@@ -40,7 +40,7 @@ model GeneratedImage {
   url         String
   isPrivate   Boolean         @default(false)
   likes       Int             @default(0)
-  model       GeneratorModel  @default(DALLE2)
+  model       GeneratorModel  @default(DALLE)
   resolution  ImageResolution
   generatedAt DateTime        @default(now())
   generatedBy User            @relation(fields: [userId], references: [id])

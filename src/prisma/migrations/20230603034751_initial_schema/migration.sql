@@ -1,12 +1,15 @@
-/*
-  Warnings:
+-- CreateTable
+CREATE TABLE `User` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `name` VARCHAR(191) NOT NULL,
+    `email` VARCHAR(191) NOT NULL,
+    `password` VARCHAR(191) NOT NULL,
+    `verified` BOOLEAN NOT NULL DEFAULT false,
+    `role` ENUM('ADMIN', 'MEMBER', 'USER') NOT NULL DEFAULT 'USER',
 
-  - Made the column `verified` on table `User` required. This step will fail if there are existing NULL values in that column.
-
-*/
--- AlterTable
-ALTER TABLE `User` ADD COLUMN `role` ENUM('ADMIN', 'MEMBER', 'USER') NOT NULL DEFAULT 'USER',
-    MODIFY `verified` BOOLEAN NOT NULL DEFAULT false;
+    UNIQUE INDEX `User_email_key`(`email`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
 CREATE TABLE `GeneratedImage` (
@@ -15,8 +18,8 @@ CREATE TABLE `GeneratedImage` (
     `url` VARCHAR(191) NOT NULL,
     `isPrivate` BOOLEAN NOT NULL DEFAULT false,
     `likes` INTEGER NOT NULL DEFAULT 0,
-    `model` ENUM('DALLE2') NOT NULL DEFAULT 'DALLE2',
-    `resolution` ENUM('RES_256x256', 'RES_512x512', 'RES_1024x1024') NOT NULL,
+    `model` ENUM('DALLE') NOT NULL DEFAULT 'DALLE',
+    `resolution` ENUM('256x256', '512x512', '1024x1024') NOT NULL,
     `generatedAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `userId` INTEGER NOT NULL,
 

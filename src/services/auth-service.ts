@@ -1,6 +1,7 @@
 import { JsonWebTokenError, JwtPayload, sign, verify } from 'jsonwebtoken';
 import { env } from '../config/globals';
-import { InvalidTokenError } from '../exceptions/auth-errors';
+import { InvalidTokenError } from '../exceptions/auth-error';
+import { UserDoesNotExistsError } from '../exceptions/user-error';
 
 export class AuthService {
   public createToken(payload: object): string {
@@ -15,6 +16,8 @@ export class AuthService {
       if (!('id' in payload)) {
         throw new InvalidTokenError();
       }
+      const userId = Number(payload.id);
+      if (Number.isNaN(userId)) throw new UserDoesNotExistsError();
       return payload.id as number;
     } catch (error) {
       if (error instanceof JsonWebTokenError) {
