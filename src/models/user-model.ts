@@ -4,5 +4,6 @@ export type UserModel = {
   id: number;
   name: string;
   email: string;
-  role?: Role;
+  role: Role;
+  verified: boolean;
 };

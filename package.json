@@ -12,15 +12,18 @@
     "lint": "lint-staged",
     "format": "eslint src/**/*.ts --fix",
     "db-push": "dotenv -e .env.development -- prisma db push --schema ./src/prisma/schema.prisma",
-    "migrate:dev": "dotenv -e .env.development -- prisma migrate dev --schema ./src/prisma/schema.prisma"
+    "migrate:dev": "dotenv -e .env.development -- prisma migrate dev --schema ./src/prisma/schema.prisma",
+    "prisma-generate": "dotenv -e .env.development -- prisma generate --schema ./src/prisma/schema.prisma"
   },
   "dependencies": {
     "@prisma/client": "^4.12.0",
+    "@types/nodemailer": "^6.4.8",
     "bcrypt": "^5.1.0",
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
     "jsonwebtoken": "^9.0.0",
+    "nodemailer": "^6.9.3",
     "openai": "^3.2.1",
     "winston": "^3.8.2"
   },

@@ -7,7 +7,8 @@ export const env = {
   ACCESS_TOKEN_SECRET: '',
   DATABASE_URL: '',
   OPENAI_TOKEN: '',
-  ROOT: path.join(__dirname, '..', '..'),
+  EMAIL_USER: '',
+  EMAIL_PASSWORD: '',
 };
 
 export function setEnv(): void {
@@ -17,6 +18,8 @@ export function setEnv(): void {
   env.ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET || '';
   env.DATABASE_URL = process.env.DATABASE_URL || '';
   env.OPENAI_TOKEN = process.env.OPENAI_TOKEN || '';
+  env.EMAIL_USER = process.env.EMAIL_USER || '';
+  env.EMAIL_PASSWORD = process.env.EMAIL_PASSWORD || '';
 }
 
 export const globalPaths = {

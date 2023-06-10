@@ -1,7 +1,9 @@
-import { PrismaClient } from '@prisma/client';
 import { HashService } from './hash-service';
 import { UserAlreadyExistsError, UserCredentialsInvalidError, UserDoesNotExistsError } from '../exceptions/user-error';
 import { UserModel } from '../models/user-model';
+import { randomBytes } from 'crypto';
+import { PrismaClient } from '@prisma/client';
+import { InvalidTokenError } from '../exceptions/auth-error';
 
 export class UserService {
   readonly hashService: HashService = new HashService();
@@ -31,9 +33,6 @@ export class UserService {
   addUser = async (email: string, name: string, password: string): Promise<UserModel> => {
     // Check if user already exists
     let user = await this.prisma.user.findFirst({
-      select: {
-        id: true,
-      },
       where: {
         email,
       },
@@ -55,6 +54,8 @@ export class UserService {
       name,
       email,
       id: user.id,
+      role: user.role,
+      verified: user.verified,
     };
   };
 
@@ -72,6 +73,56 @@ export class UserService {
       name: user.name,
       email: user.email,
       role: user.role,
+      verified: user.verified,
     };
+  };
+
+  updateAccountVerificationToken = async (id: number): Promise<string> => {
+    const newToken = randomBytes(16).toString('hex');
+    await this.prisma.user.update({
+      where: {
+        id,
+      },
+      data: {
+        verified: false,
+        verificationToken: newToken,
+        tokenGeneratedAt: new Date(),
+      },
+    });
+
+    return newToken;
+  };
+
+  verifyUserAccount = async (id: number, verificationToken: string): Promise<void> => {
+    const user = await this.prisma.user.findFirst({
+      select: {
+        verificationToken: true,
+        tokenGeneratedAt: true,
+      },
+      where: {
+        id,
+      },
+    });
+
+    if (!user) throw new UserDoesNotExistsError();
+
+    if (verificationToken !== user.verificationToken || !user.tokenGeneratedAt) throw new InvalidTokenError();
+    const timeDiff = (new Date().getTime() - user.tokenGeneratedAt.getTime()) / (1000 * 60);
+    if (timeDiff > 300) {
+      // Token is older than 30 minutes, so not valid
+      throw new InvalidTokenError();
+    }
+
+    // Everything is okay, mark user as verified
+    await this.prisma.user.update({
+      where: {
+        id,
+      },
+      data: {
+        verified: true,
+        verificationToken: null,
+        tokenGeneratedAt: null,
+      },
+    });
   };
 }
