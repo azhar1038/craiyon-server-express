@@ -60,3 +60,12 @@ model Favourite {
 
   @@id([userId, imageId])
 }
+
+model RefreshTokens {
+  familyId  String
+  tokenId   String
+  userId    Int
+  validTill DateTime
+
+  @@id([familyId, tokenId])
+}

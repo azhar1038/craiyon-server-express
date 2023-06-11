@@ -19,7 +19,7 @@ export const authenticate = (req: CustomRequest, res: Response, next: NextFuncti
     let msg = 'Authentication failed';
     const statusCode = 401;
     if (error instanceof InvalidTokenError) {
-      msg = 'Invalid token provided';
+      msg = error.message;
     } else if (error instanceof MissingTokenError) {
       msg = error.message;
     } else {
