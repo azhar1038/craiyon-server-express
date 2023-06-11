@@ -5,6 +5,8 @@ export const env = {
   NODE_PORT: '',
   DOMAIN: '',
   ACCESS_TOKEN_SECRET: '',
+  REFRESH_TOKEN_SECRET: '',
+  REFRESH_TOKEN_EXPIRE_DAY: 7,
   DATABASE_URL: '',
   OPENAI_TOKEN: '',
   EMAIL_USER: '',
@@ -20,6 +22,7 @@ export function setEnv(): void {
   env.OPENAI_TOKEN = process.env.OPENAI_TOKEN || '';
   env.EMAIL_USER = process.env.EMAIL_USER || '';
   env.EMAIL_PASSWORD = process.env.EMAIL_PASSWORD || '';
+  env.REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET || '';
 }
 
 export const globalPaths = {

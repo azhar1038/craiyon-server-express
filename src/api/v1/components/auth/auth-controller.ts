@@ -10,12 +10,22 @@ import {
 } from '../../../../exceptions/user-error';
 import { MailService } from '../../../../services/mail-service';
 import { env } from '../../../../config/globals';
+import { InvalidTokenError, MissingTokenError } from '../../../../exceptions/auth-error';
 
 export class AuthController {
-  readonly authService: AuthService = new AuthService();
-  readonly hashService: HashService = new HashService();
-  readonly userService: UserService = new UserService();
-  readonly mailService: MailService = MailService.instance;
+  private readonly authService: AuthService = new AuthService();
+  private readonly hashService: HashService = new HashService();
+  private readonly userService: UserService = new UserService();
+  private readonly mailService: MailService = MailService.instance;
+
+  private async generateTokenResponse(userId: number, tokenFamilyId?: string) {
+    const accessToken = this.authService.createToken(userId);
+    const refreshToken = await this.authService.createRefreshToken(userId, tokenFamilyId);
+    return {
+      accessToken,
+      refreshToken,
+    };
+  }
 
   loginUser = async (req: Request, res: Response): Promise<void> => {
     const email = req.body.email;
@@ -28,8 +38,7 @@ export class AuthController {
 
     try {
       const userId = await this.userService.verifyUser(email, password);
-      const accessToken = this.authService.createToken({ id: userId });
-      res.json({ token: accessToken });
+      res.json(await this.generateTokenResponse(userId));
     } catch (error) {
       let msg = 'Failed to login, please try again later';
       let statusCode = 500;
@@ -58,14 +67,13 @@ export class AuthController {
 
     try {
       const user = await this.userService.addUser(email, name, password);
-      const accessToken = this.authService.createToken({ id: user.id });
 
       // Generate and send verification mail
       const verificationToken = await this.userService.updateAccountVerificationToken(user.id);
       const verificationUrl = `${env.DOMAIN}/api/v1/user/verify/${user.id}/${verificationToken}`;
       this.mailService.sendAccoutVerificationMail(email, verificationUrl);
 
-      res.status(201).json({ token: accessToken });
+      res.status(201).json(await this.generateTokenResponse(user.id));
     } catch (error) {
       let msg = 'Something went wrong';
       let statusCode = 500;
@@ -75,6 +83,27 @@ export class AuthController {
       } else {
         logger.error(error);
       }
+      res.status(statusCode).json(msg);
+    }
+  };
+
+  refreshToken = async (req: Request, res: Response): Promise<void> => {
+    const refreshToken = req.headers.authorization?.replace('Bearer ', '');
+    try {
+      if (!refreshToken) throw new MissingTokenError();
+      const refreshTokenData = await this.authService.verifyRefreshToken(refreshToken);
+      res.json(await this.generateTokenResponse(refreshTokenData.userId, refreshTokenData.familyId));
+    } catch (error) {
+      let msg = 'Failed to generate token';
+      let statusCode = 500;
+
+      if (error instanceof MissingTokenError || error instanceof InvalidTokenError) {
+        statusCode = 403;
+        msg = error.message;
+      } else {
+        logger.error(error);
+      }
+
       res.status(statusCode).json(msg);
     }
   };
