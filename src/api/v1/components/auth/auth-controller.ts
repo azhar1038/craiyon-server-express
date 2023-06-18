@@ -69,7 +69,7 @@ export class AuthController {
       const user = await this.userService.addUser(email, name, password);
 
       // Generate and send verification mail
-      const verificationToken = await this.userService.updateAccountVerificationToken(user.id);
+      const verificationToken = await this.userService.updateVerificationToken(user.id);
       const verificationUrl = `${env.DOMAIN}/api/v1/user/verify/${user.id}/${verificationToken}`;
       this.mailService.sendAccoutVerificationMail(email, verificationUrl);
 
