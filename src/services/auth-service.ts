@@ -1,13 +1,13 @@
 import { randomUUID } from 'crypto';
 import { JsonWebTokenError, JwtPayload, sign, verify } from 'jsonwebtoken';
-import { PrismaClient } from '@prisma/client';
 import { env } from '../config/globals';
 import { InvalidTokenError } from '../exceptions/auth-error';
 import { UserDoesNotExistsError } from '../exceptions/user-error';
 import { RefreshTokenModel } from '../models/refresh-token-model';
+import { PrismaService } from './prisma-service';
 
 export class AuthService {
-  private readonly prisma = new PrismaClient();
+  private readonly prisma = PrismaService.instance.client;
 
   public createToken(userId: number): string {
     const accessToken = sign({ type: 'Access Token', userId }, env.ACCESS_TOKEN_SECRET, {
