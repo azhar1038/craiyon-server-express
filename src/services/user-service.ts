@@ -77,7 +77,21 @@ export class UserService {
     };
   };
 
-  updateAccountVerificationToken = async (id: number): Promise<string> => {
+  isUserVerified = async (id: number): Promise<boolean> => {
+    const user = await this.prisma.user.findFirst({
+      select: {
+        verified: true,
+      },
+      where: {
+        id,
+      },
+    });
+
+    if (!user) return false;
+    return user.verified;
+  };
+
+  updateVerificationToken = async (id: number): Promise<string> => {
     const newToken = randomBytes(16).toString('hex');
     await this.prisma.user.update({
       where: {
@@ -93,7 +107,7 @@ export class UserService {
     return newToken;
   };
 
-  verifyUserAccount = async (id: number, verificationToken: string): Promise<void> => {
+  private verifyToken = async (id: number, token: string): Promise<void> => {
     const user = await this.prisma.user.findFirst({
       select: {
         verificationToken: true,
@@ -106,12 +120,16 @@ export class UserService {
 
     if (!user) throw new UserDoesNotExistsError();
 
-    if (verificationToken !== user.verificationToken || !user.tokenGeneratedAt) throw new InvalidTokenError();
+    if (token !== user.verificationToken || !user.tokenGeneratedAt) throw new InvalidTokenError();
     const timeDiff = (new Date().getTime() - user.tokenGeneratedAt.getTime()) / (1000 * 60);
     if (timeDiff > 300) {
       // Token is older than 30 minutes, so not valid
       throw new InvalidTokenError();
     }
+  };
+
+  verifyUserAccount = async (id: number, verificationToken: string): Promise<void> => {
+    await this.verifyToken(id, verificationToken);
 
     // Everything is okay, mark user as verified
     await this.prisma.user.update({
@@ -122,6 +140,30 @@ export class UserService {
         verified: true,
         verificationToken: null,
         tokenGeneratedAt: null,
+      },
+    });
+  };
+
+  resetUserPassword = async (id: number, passwordResetToken: string, newPassword: string): Promise<void> => {
+    await this.verifyToken(id, passwordResetToken);
+
+    // Token is correct, so update the password with hased value
+    const hasedPassword = await this.hashService.getHash(newPassword);
+    await this.prisma.user.update({
+      where: {
+        id,
+      },
+      data: {
+        verificationToken: null,
+        tokenGeneratedAt: null,
+        password: hasedPassword,
+      },
+    });
+
+    // Invalidate all existing refresh tokens for user
+    await this.prisma.refreshTokens.deleteMany({
+      where: {
+        userId: id,
       },
     });
   };

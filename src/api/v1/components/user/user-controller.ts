@@ -66,11 +66,11 @@ export class UserController {
       const userId = req.userId;
       if (!userId) throw new UserDoesNotExistsError();
 
+      let handleUrl: string = req.body.handleUrl ?? `${env.DOMAIN}/api/v1/user/verify/`;
       const user: UserModel = await this.userService.getUser(userId);
-
-      const newToken = await this.userService.updateAccountVerificationToken(userId);
-      const verificationUrl = `${env.DOMAIN}/api/v1/user/verify/${userId}/${newToken}`;
-      this.mailService.sendAccoutVerificationMail(user.email, verificationUrl);
+      const newToken = await this.userService.updateVerificationToken(userId);
+      handleUrl += `${userId}/${newToken}`;
+      this.mailService.sendAccoutVerificationMail(user.email, handleUrl);
       res.json('Sent verification mail');
     } catch (error) {
       let statusCode = 500;
@@ -89,7 +89,7 @@ export class UserController {
     const userId = Number(req.params.user);
     const verificationToken = req.params.token;
 
-    if (!userId || Number.isNaN(userId) || !verificationToken) return res.status(400).json('Invalid link');
+    if (Number.isNaN(userId) || !verificationToken) return res.status(400).json('Invalid link');
 
     try {
       await this.userService.verifyUserAccount(userId, verificationToken);
@@ -100,6 +100,58 @@ export class UserController {
 
       if (error instanceof UserDoesNotExistsError || error instanceof InvalidTokenError) {
         msg = 'Invalid link';
+        statusCode = 400;
+      } else {
+        logger.error(error);
+      }
+
+      res.status(statusCode).json(msg);
+    }
+  };
+
+  sendPasswordResetMail = async (req: Request, res: Response) => {
+    try {
+      const userId = Number(req.body.userId);
+      if (Number.isNaN(userId)) throw new UserDoesNotExistsError();
+
+      let handleUrl: string = req.body.handleUrl ?? `${env.DOMAIN}/api/v1/user/verify-password-reset-token/`;
+      const user: UserModel = await this.userService.getUser(userId);
+      const newToken = await this.userService.updateVerificationToken(userId);
+      handleUrl += `${userId}/${newToken}`;
+      this.mailService.sendPasswordResetMail(user.email, handleUrl);
+      res.json('Sent password reset mail');
+    } catch (error) {
+      let statusCode = 500;
+      let msg = 'Failed to generate verification token';
+      if (error instanceof UserDoesNotExistsError) {
+        statusCode = 404;
+        msg = error.message;
+      } else {
+        logger.error(error);
+      }
+      res.status(statusCode).json(msg);
+    }
+  };
+
+  resetPassword = async (req: Request, res: Response) => {
+    try {
+      const userId = Number(req.body.userId);
+      if (Number.isNaN(userId)) throw new UserDoesNotExistsError();
+
+      const token: string = req.body.token;
+      if (!token) throw new InvalidTokenError();
+
+      const newPassword: string = req.body.newPassword;
+      if (!newPassword) return res.status(400).json('New password is missing');
+
+      await this.userService.resetUserPassword(userId, token, newPassword);
+      res.json('Password has been reset successfully');
+    } catch (error) {
+      let msg = 'Failed to reset password';
+      let statusCode = 500;
+
+      if (error instanceof UserDoesNotExistsError || error instanceof InvalidTokenError) {
+        msg = error.message;
         statusCode = 400;
       } else {
         logger.error(error);

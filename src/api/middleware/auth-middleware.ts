@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 import { AuthService } from '../../services/auth-service';
 import { InvalidTokenError, MissingTokenError } from '../../exceptions/auth-error';
 import { logger } from '../../services/logger-service';
+import { UserService } from '../../services/user-service';
 
 export interface CustomRequest extends Request {
   userId?: number;
@@ -29,7 +30,7 @@ export const authenticate = (req: CustomRequest, res: Response, next: NextFuncti
   }
 };
 
-export const isAuthenticated = (req: CustomRequest, res: Response, next: NextFunction) => {
+export const addUserId = (req: CustomRequest, res: Response, next: NextFunction) => {
   const authService: AuthService = new AuthService();
   const token = req.headers.authorization?.replace('Bearer ', '');
   if (!token) return next();
@@ -49,5 +50,22 @@ export const isAuthenticated = (req: CustomRequest, res: Response, next: NextFun
       logger.error(error);
     }
     res.status(statusCode).json(msg);
+  }
+};
+
+export const verified = async (req: CustomRequest, res: Response, next: NextFunction) => {
+  const userService = new UserService();
+  const userId = req.userId;
+  if (!userId) return res.status(401).json('Missing User ID');
+
+  try {
+    if (await userService.isUserVerified(userId)) {
+      next();
+    } else {
+      res.status(403).json('User verification needed');
+    }
+  } catch (error) {
+    logger.error(error);
+    res.status(500).json('Authentication failed');
   }
 };
