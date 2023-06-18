@@ -2,12 +2,12 @@ import { HashService } from './hash-service';
 import { UserAlreadyExistsError, UserCredentialsInvalidError, UserDoesNotExistsError } from '../exceptions/user-error';
 import { UserModel } from '../models/user-model';
 import { randomBytes } from 'crypto';
-import { PrismaClient } from '@prisma/client';
 import { InvalidTokenError } from '../exceptions/auth-error';
+import { PrismaService } from './prisma-service';
 
 export class UserService {
   readonly hashService: HashService = new HashService();
-  readonly prisma: PrismaClient = new PrismaClient();
+  readonly prisma = PrismaService.instance.client;
 
   verifyUser = async (email: string, password: string): Promise<number> => {
     const user = await this.prisma.user.findFirst({
@@ -98,7 +98,6 @@ export class UserService {
         id,
       },
       data: {
-        verified: false,
         verificationToken: newToken,
         tokenGeneratedAt: new Date(),
       },

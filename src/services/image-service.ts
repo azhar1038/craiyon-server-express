@@ -1,12 +1,13 @@
-import { GeneratorModel, ImageResolution, PrismaClient } from '@prisma/client';
 import { globalPaths } from '../config/globals';
 import path from 'path';
 import { GeneratedImageModel } from '../models/generated-image-model';
 import { NoImageError } from '../exceptions/image-error';
 import { Model, Resolution, SortBy, SortOrder } from '../config/enums';
+import { PrismaService } from './prisma-service';
+import { GeneratorModel, ImageResolution } from '@prisma/client';
 
 export class ImageService {
-  private prisma = new PrismaClient();
+  private prisma = PrismaService.instance.client;
 
   saveImage = async (
     userId: number,
