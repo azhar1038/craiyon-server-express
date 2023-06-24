@@ -13,7 +13,8 @@
     "format": "eslint src/**/*.ts --fix",
     "db-push": "dotenv -e .env.development -- prisma db push --schema ./src/prisma/schema.prisma",
     "migrate:dev": "dotenv -e .env.development -- prisma migrate dev --schema ./src/prisma/schema.prisma",
-    "prisma-generate": "dotenv -e .env.development -- prisma generate --schema ./src/prisma/schema.prisma"
+    "prisma-generate": "dotenv -e .env.development -- prisma generate --schema ./src/prisma/schema.prisma",
+    "test": "vitest"
   },
   "dependencies": {
     "@prisma/client": "^4.12.0",
@@ -42,6 +43,8 @@
     "prettier": "^2.8.6",
     "prisma": "^4.12.0",
     "tsx": "^3.12.6",
-    "typescript": "^5.0.2"
+    "typescript": "^5.0.2",
+    "vitest": "^0.32.2",
+    "vitest-mock-extended": "^1.1.3"
   }
 }

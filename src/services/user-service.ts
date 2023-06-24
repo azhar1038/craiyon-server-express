@@ -3,14 +3,13 @@ import { UserAlreadyExistsError, UserCredentialsInvalidError, UserDoesNotExistsE
 import { UserModel } from '../models/user-model';
 import { randomBytes } from 'crypto';
 import { InvalidTokenError } from '../exceptions/auth-error';
-import { PrismaService } from './prisma-service';
+import prisma from './prisma-service';
 
 export class UserService {
   readonly hashService: HashService = new HashService();
-  readonly prisma = PrismaService.instance.client;
 
   verifyUser = async (email: string, password: string): Promise<number> => {
-    const user = await this.prisma.user.findFirst({
+    const user = await prisma.user.findFirst({
       select: {
         id: true,
         email: true,
@@ -32,7 +31,7 @@ export class UserService {
 
   addUser = async (email: string, name: string, password: string): Promise<UserModel> => {
     // Check if user already exists
-    let user = await this.prisma.user.findFirst({
+    let user = await prisma.user.findFirst({
       where: {
         email,
       },
@@ -42,7 +41,7 @@ export class UserService {
 
     // Add New user
     const hashedPassword = await this.hashService.getHash(password);
-    user = await this.prisma.user.create({
+    user = await prisma.user.create({
       data: {
         name,
         email,
@@ -60,7 +59,7 @@ export class UserService {
   };
 
   getUser = async (id: number): Promise<UserModel> => {
-    const user = await this.prisma.user.findFirst({
+    const user = await prisma.user.findFirst({
       where: {
         id,
       },
@@ -78,7 +77,7 @@ export class UserService {
   };
 
   isUserVerified = async (id: number): Promise<boolean> => {
-    const user = await this.prisma.user.findFirst({
+    const user = await prisma.user.findFirst({
       select: {
         verified: true,
       },
@@ -93,7 +92,7 @@ export class UserService {
 
   updateVerificationToken = async (id: number): Promise<string> => {
     const newToken = randomBytes(16).toString('hex');
-    await this.prisma.user.update({
+    await prisma.user.update({
       where: {
         id,
       },
@@ -107,7 +106,7 @@ export class UserService {
   };
 
   private verifyToken = async (id: number, token: string): Promise<void> => {
-    const user = await this.prisma.user.findFirst({
+    const user = await prisma.user.findFirst({
       select: {
         verificationToken: true,
         tokenGeneratedAt: true,
@@ -131,7 +130,7 @@ export class UserService {
     await this.verifyToken(id, verificationToken);
 
     // Everything is okay, mark user as verified
-    await this.prisma.user.update({
+    await prisma.user.update({
       where: {
         id,
       },
@@ -148,7 +147,7 @@ export class UserService {
 
     // Token is correct, so update the password with hased value
     const hasedPassword = await this.hashService.getHash(newPassword);
-    await this.prisma.user.update({
+    await prisma.user.update({
       where: {
         id,
       },
@@ -160,7 +159,7 @@ export class UserService {
     });
 
     // Invalidate all existing refresh tokens for user
-    await this.prisma.refreshTokens.deleteMany({
+    await prisma.refreshTokens.deleteMany({
       where: {
         userId: id,
       },

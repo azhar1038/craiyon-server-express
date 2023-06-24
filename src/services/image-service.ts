@@ -3,12 +3,10 @@ import path from 'path';
 import { GeneratedImageModel } from '../models/generated-image-model';
 import { NoImageError } from '../exceptions/image-error';
 import { Model, Resolution, SortBy, SortOrder } from '../config/enums';
-import { PrismaService } from './prisma-service';
+import prisma from './prisma-service';
 import { GeneratorModel, ImageResolution } from '@prisma/client';
 
 export class ImageService {
-  private prisma = PrismaService.instance.client;
-
   saveImage = async (
     userId: number,
     prompt: string,
@@ -37,7 +35,7 @@ export class ImageService {
         break;
     }
 
-    const image = await this.prisma.generatedImage.create({
+    const image = await prisma.generatedImage.create({
       data: {
         userId,
         prompt,
@@ -51,7 +49,7 @@ export class ImageService {
   };
 
   resolvePath = async (userId: number | undefined, imageId: number): Promise<string> => {
-    const image = await this.prisma.generatedImage.findFirst({
+    const image = await prisma.generatedImage.findFirst({
       select: {
         url: true,
       },
@@ -67,7 +65,7 @@ export class ImageService {
   };
 
   getUserGeneratedImages = async (userId: number, limit: number, page: number): Promise<GeneratedImageModel[]> => {
-    const images = await this.prisma.generatedImage.findMany({
+    const images = await prisma.generatedImage.findMany({
       where: {
         userId,
       },
@@ -102,7 +100,7 @@ export class ImageService {
       orderBy.push({ generatedAt: order });
     }
 
-    const images = await this.prisma.generatedImage.findMany({
+    const images = await prisma.generatedImage.findMany({
       where: {
         isPrivate: false,
       },
@@ -136,7 +134,7 @@ export class ImageService {
   };
 
   isFavorite = async (userId: number, imageId: number): Promise<boolean> => {
-    const image = await this.prisma.generatedImage.findFirst({
+    const image = await prisma.generatedImage.findFirst({
       where: {
         id: imageId,
         isPrivate: false,
@@ -145,7 +143,7 @@ export class ImageService {
 
     if (!image) throw new NoImageError();
 
-    const favorite = await this.prisma.favourite.findFirst({
+    const favorite = await prisma.favourite.findFirst({
       where: {
         userId,
         imageId,
@@ -156,14 +154,14 @@ export class ImageService {
   };
 
   addToFavorite = async (userId: number, imageId: number): Promise<void> => {
-    await this.prisma.$transaction([
-      this.prisma.favourite.create({
+    await prisma.$transaction([
+      prisma.favourite.create({
         data: {
           userId,
           imageId,
         },
       }),
-      this.prisma.generatedImage.update({
+      prisma.generatedImage.update({
         where: {
           id: imageId,
         },
@@ -177,8 +175,8 @@ export class ImageService {
   };
 
   removeFromFavorite = async (userId: number, imageId: number): Promise<void> => {
-    await this.prisma.$transaction([
-      this.prisma.favourite.delete({
+    await prisma.$transaction([
+      prisma.favourite.delete({
         where: {
           userId_imageId: {
             userId,
@@ -186,7 +184,7 @@ export class ImageService {
           },
         },
       }),
-      this.prisma.generatedImage.update({
+      prisma.generatedImage.update({
         where: {
           id: imageId,
         },
