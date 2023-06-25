@@ -4,11 +4,9 @@ import { env } from '../config/globals';
 import { InvalidTokenError } from '../exceptions/auth-error';
 import { UserDoesNotExistsError } from '../exceptions/user-error';
 import { RefreshTokenModel } from '../models/refresh-token-model';
-import { PrismaService } from './prisma-service';
+import prisma from './prisma-service';
 
 export class AuthService {
-  private readonly prisma = PrismaService.instance.client;
-
   public createToken(userId: number): string {
     const accessToken = sign({ type: 'Access Token', userId }, env.ACCESS_TOKEN_SECRET, {
       expiresIn: '1h',
@@ -17,27 +15,28 @@ export class AuthService {
   }
 
   public verifyToken(token: string): number {
+    let decoded: string | JwtPayload;
     try {
-      const decoded = verify(token, env.ACCESS_TOKEN_SECRET);
-      const payload = decoded as JwtPayload;
-      if (!('userId' in payload)) {
-        throw new InvalidTokenError();
-      }
-      const userId = Number(payload.userId);
-      if (Number.isNaN(userId)) throw new UserDoesNotExistsError();
-      return userId;
+      decoded = verify(token, env.ACCESS_TOKEN_SECRET);
     } catch (error) {
       if (error instanceof JsonWebTokenError) {
         throw new InvalidTokenError();
       }
       throw error;
     }
+    const payload = decoded as JwtPayload;
+    if (!('userId' in payload)) {
+      throw new InvalidTokenError();
+    }
+    const userId = Number(payload.userId);
+    if (Number.isNaN(userId)) throw new UserDoesNotExistsError();
+    return userId;
   }
 
   createRefreshToken = async (userId: number, familyId?: string): Promise<string> => {
     if (familyId) {
       // A valid request, so remove the previous token
-      await this.prisma.refreshTokens.deleteMany({
+      await prisma.refreshTokens.deleteMany({
         where: {
           familyId,
         },
@@ -56,7 +55,7 @@ export class AuthService {
       env.REFRESH_TOKEN_SECRET,
     );
 
-    await this.prisma.refreshTokens.create({
+    await prisma.refreshTokens.create({
       data: {
         familyId,
         tokenId,
@@ -87,8 +86,10 @@ export class AuthService {
     const tokenId: string = payload.tokenId;
     const familyId: string = payload.familyId;
 
+    if (Number.isNaN(userId)) throw new UserDoesNotExistsError();
+
     // Refresh token don't expire on there own, so verify from database
-    const tokenData = await this.prisma.refreshTokens.findFirst({
+    const tokenData = await prisma.refreshTokens.findFirst({
       select: {
         tokenId: true,
         userId: true,
@@ -108,16 +109,14 @@ export class AuthService {
     if (tokenData.tokenId !== tokenId || tokenData.userId !== userId) {
       invalid = true;
     } else {
-      const expiryDaysInMs = env.REFRESH_TOKEN_EXPIRE_DAY * 24 * 60 * 60 * 1000;
-      const timeDiffInMs = new Date().getTime() - tokenData.validTill.getTime();
-      if (timeDiffInMs > expiryDaysInMs) {
+      if (tokenData.validTill.getTime() < new Date().getTime()) {
         invalid = true;
       }
     }
 
     if (invalid) {
       // Delete tokens belonging to this family and throw error
-      await this.prisma.refreshTokens.deleteMany({
+      await prisma.refreshTokens.deleteMany({
         where: {
           familyId,
         },
