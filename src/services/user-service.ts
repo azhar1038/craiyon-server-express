@@ -105,7 +105,7 @@ export class UserService {
     return newToken;
   };
 
-  private verifyToken = async (id: number, token: string): Promise<void> => {
+  verifyToken = async (id: number, token: string): Promise<void> => {
     const user = await prisma.user.findFirst({
       select: {
         verificationToken: true,
@@ -120,7 +120,7 @@ export class UserService {
 
     if (token !== user.verificationToken || !user.tokenGeneratedAt) throw new InvalidTokenError();
     const timeDiff = (new Date().getTime() - user.tokenGeneratedAt.getTime()) / (1000 * 60);
-    if (timeDiff > 300) {
+    if (timeDiff > 30) {
       // Token is older than 30 minutes, so not valid
       throw new InvalidTokenError();
     }
