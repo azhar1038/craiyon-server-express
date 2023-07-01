@@ -109,6 +109,7 @@ export class UserController {
     }
   };
 
+  // TODO: Use user mail and not id
   sendPasswordResetMail = async (req: Request, res: Response) => {
     try {
       const userId = Number(req.body.userId);
@@ -135,7 +136,7 @@ export class UserController {
 
   resetPassword = async (req: Request, res: Response) => {
     try {
-      const userId = Number(req.body.userId);
+      const userId = Number(req.body.user);
       if (Number.isNaN(userId)) throw new UserDoesNotExistsError();
 
       const token: string = req.body.token;
