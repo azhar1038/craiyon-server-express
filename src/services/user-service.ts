@@ -8,7 +8,7 @@ import prisma from './prisma-service';
 export class UserService {
   readonly hashService: HashService = new HashService();
 
-  verifyUser = async (email: string, password: string): Promise<number> => {
+  async verifyUser(email: string, password: string): Promise<number> {
     const user = await prisma.user.findFirst({
       select: {
         id: true,
@@ -27,9 +27,9 @@ export class UserService {
     }
 
     throw new UserCredentialsInvalidError();
-  };
+  }
 
-  addUser = async (email: string, name: string, password: string): Promise<UserModel> => {
+  async addUser(email: string, name: string, password: string): Promise<UserModel> {
     // Check if user already exists
     let user = await prisma.user.findFirst({
       where: {
@@ -56,9 +56,9 @@ export class UserService {
       role: user.role,
       verified: user.verified,
     };
-  };
+  }
 
-  getUser = async (id: number): Promise<UserModel> => {
+  async getUser(id: number): Promise<UserModel> {
     const user = await prisma.user.findFirst({
       where: {
         id,
@@ -74,9 +74,9 @@ export class UserService {
       role: user.role,
       verified: user.verified,
     };
-  };
+  }
 
-  isUserVerified = async (id: number): Promise<boolean> => {
+  async isUserVerified(id: number): Promise<boolean> {
     const user = await prisma.user.findFirst({
       select: {
         verified: true,
@@ -88,9 +88,9 @@ export class UserService {
 
     if (!user) return false;
     return user.verified;
-  };
+  }
 
-  updateVerificationToken = async (id: number): Promise<string> => {
+  async updateVerificationToken(id: number): Promise<string> {
     const newToken = randomBytes(16).toString('hex');
     await prisma.user.update({
       where: {
@@ -103,9 +103,9 @@ export class UserService {
     });
 
     return newToken;
-  };
+  }
 
-  verifyToken = async (id: number, token: string): Promise<void> => {
+  async verifyToken(id: number, token: string): Promise<void> {
     const user = await prisma.user.findFirst({
       select: {
         verificationToken: true,
@@ -124,9 +124,9 @@ export class UserService {
       // Token is older than 30 minutes, so not valid
       throw new InvalidTokenError();
     }
-  };
+  }
 
-  verifyUserAccount = async (id: number, verificationToken: string): Promise<void> => {
+  async verifyUserAccount(id: number, verificationToken: string): Promise<void> {
     await this.verifyToken(id, verificationToken);
 
     // Everything is okay, mark user as verified
@@ -140,9 +140,9 @@ export class UserService {
         tokenGeneratedAt: null,
       },
     });
-  };
+  }
 
-  resetUserPassword = async (id: number, passwordResetToken: string, newPassword: string): Promise<void> => {
+  async resetUserPassword(id: number, passwordResetToken: string, newPassword: string): Promise<void> {
     await this.verifyToken(id, passwordResetToken);
 
     // Token is correct, so update the password with hased value
@@ -164,5 +164,5 @@ export class UserService {
         userId: id,
       },
     });
-  };
+  }
 }

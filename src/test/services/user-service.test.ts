@@ -1,14 +1,14 @@
 import { beforeAll, describe, expect, test, vi } from 'vitest';
-import { setEnv } from '../../src/config/globals';
-import { UserService } from '../../src/services/user-service';
-import prisma from '../../src/services/__mocks__/prisma-service';
-import { InvalidTokenError } from '../../src/exceptions/auth-error';
+import { setEnv } from '../../config/globals';
+import { UserService } from '../../services/user-service';
+import prisma from '../../services/__mocks__/prisma-service';
+import { InvalidTokenError } from '../../exceptions/auth-error';
 import {
   UserAlreadyExistsError,
   UserCredentialsInvalidError,
   UserDoesNotExistsError,
-} from '../../src/exceptions/user-error';
-import { HashService } from '../../src/services/hash-service';
+} from '../../exceptions/user-error';
+import { HashService } from '../../services/hash-service';
 import { User } from '@prisma/client';
 
 let userService: UserService;
@@ -16,7 +16,7 @@ let user: User;
 const password = 'password';
 const verificationToken = 'verification-token';
 const now = new Date(2023, 0, 1, 0, 0, 0);
-vi.mock('../../src/services/prisma-service');
+vi.mock('../../services/prisma-service');
 
 beforeAll(async () => {
   userService = new UserService();
