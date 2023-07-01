@@ -84,6 +84,7 @@ export class ImageController {
     }
   };
 
+  // TODO: Use body instead of params
   favorite = async (req: CustomRequest, res: Response) => {
     const userId = req.userId;
     if (!userId) return res.status(400).json('User ID is missing');
