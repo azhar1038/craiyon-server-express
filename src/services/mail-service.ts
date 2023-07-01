@@ -17,7 +17,10 @@ export class MailService {
   }
 
   public static get instance() {
-    return MailService._instance || new this();
+    if (!MailService._instance) {
+      MailService._instance = new this();
+    }
+    return MailService._instance;
   }
 
   public sendMail(to: string, subject: string, message: string) {

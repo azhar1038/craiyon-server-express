@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 import { AuthService } from '../../../../services/auth-service';
 import { UserService } from '../../../../services/user-service';
-import { HashService } from '../../../../services/hash-service';
 import { logger } from '../../../../services/logger-service';
 import {
   UserAlreadyExistsError,
@@ -14,7 +13,6 @@ import { InvalidTokenError, MissingTokenError } from '../../../../exceptions/aut
 
 export class AuthController {
   private readonly authService: AuthService = new AuthService();
-  private readonly hashService: HashService = new HashService();
   private readonly userService: UserService = new UserService();
   private readonly mailService: MailService = MailService.instance;
 
@@ -38,7 +36,7 @@ export class AuthController {
 
     try {
       const userId = await this.userService.verifyUser(email, password);
-      res.json(await this.generateTokenResponse(userId));
+      res.status(200).json(await this.generateTokenResponse(userId));
     } catch (error) {
       let msg = 'Failed to login, please try again later';
       let statusCode = 500;
@@ -92,7 +90,7 @@ export class AuthController {
     try {
       if (!refreshToken) throw new MissingTokenError();
       const refreshTokenData = await this.authService.verifyRefreshToken(refreshToken);
-      res.json(await this.generateTokenResponse(refreshTokenData.userId, refreshTokenData.familyId));
+      res.status(201).json(await this.generateTokenResponse(refreshTokenData.userId, refreshTokenData.familyId));
     } catch (error) {
       let msg = 'Failed to generate token';
       let statusCode = 500;

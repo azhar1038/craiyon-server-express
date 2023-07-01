@@ -33,7 +33,7 @@ export class AuthService {
     return userId;
   }
 
-  createRefreshToken = async (userId: number, familyId?: string): Promise<string> => {
+  async createRefreshToken(userId: number, familyId?: string): Promise<string> {
     if (familyId) {
       // A valid request, so remove the previous token
       await prisma.refreshTokens.deleteMany({
@@ -64,9 +64,9 @@ export class AuthService {
       },
     });
     return refreshToken;
-  };
+  }
 
-  verifyRefreshToken = async (token: string): Promise<RefreshTokenModel> => {
+  async verifyRefreshToken(token: string): Promise<RefreshTokenModel> {
     let decoded: string | JwtPayload;
     try {
       decoded = verify(token, env.REFRESH_TOKEN_SECRET);
@@ -130,5 +130,5 @@ export class AuthService {
       familyId,
       validTill: tokenData.validTill,
     };
-  };
+  }
 }

@@ -1,13 +1,13 @@
 import { sign } from 'jsonwebtoken';
 import { beforeAll, describe, expect, test, vi } from 'vitest';
-import { env, setEnv } from '../../src/config/globals';
-import { AuthService } from '../../src/services/auth-service';
-import prisma from '../../src/services/__mocks__/prisma-service';
-import { InvalidTokenError } from '../../src/exceptions/auth-error';
-import { UserDoesNotExistsError } from '../../src/exceptions/user-error';
+import { env, setEnv } from '../../config/globals';
+import { AuthService } from '../../services/auth-service';
+import prisma from '../../services/__mocks__/prisma-service';
+import { InvalidTokenError } from '../../exceptions/auth-error';
+import { UserDoesNotExistsError } from '../../exceptions/user-error';
 
 let authService: AuthService;
-vi.mock('../../src/services/prisma-service');
+vi.mock('../../services/prisma-service');
 
 beforeAll(() => {
   authService = new AuthService();
