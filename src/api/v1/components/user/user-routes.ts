@@ -16,6 +16,7 @@ export class UserRoutes implements ComponentRoutes<UserController> {
     this.router.get('/', authenticate, this.controller.getUserDetails);
     this.router.patch('/new-verificaion-token', authenticate, this.controller.generateNewVerificationToken);
     this.router.get('/verify/:user/:token', this.controller.verifyAccount);
+    this.router.patch('/verify', this.controller.verifyAccount);
     this.router.post('/password-reset-mail', this.controller.sendPasswordResetMail);
     this.router.patch('/reset-password', this.controller.resetPassword);
     this.router.get('/generated-images', authenticate, this.controller.getImages);

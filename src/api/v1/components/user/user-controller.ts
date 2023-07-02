@@ -86,8 +86,8 @@ export class UserController {
   };
 
   verifyAccount = async (req: Request, res: Response) => {
-    const userId = Number(req.params.user);
-    const verificationToken = req.params.token;
+    const userId = Number(req.params.user ?? req.body.user);
+    const verificationToken = req.params.token ?? req.body.token;
 
     if (Number.isNaN(userId) || !verificationToken) return res.status(400).json('Invalid link');
 
