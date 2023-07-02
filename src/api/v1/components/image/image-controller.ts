@@ -84,13 +84,12 @@ export class ImageController {
     }
   };
 
-  // TODO: Use body instead of params
   favorite = async (req: CustomRequest, res: Response) => {
     const userId = req.userId;
     if (!userId) return res.status(400).json('User ID is missing');
 
     try {
-      const imageId: number = parseInt(req.params.id);
+      const imageId = Number(req.body.id);
       const isFavorite = await this.imageService.isFavorite(userId, imageId);
       let msg = '';
       if (isFavorite) {
