@@ -24,6 +24,7 @@ Currently only OpenAI DALLE has been implemented. I have plans to add more servi
     - [get `/image/get/:id`](#get-imagegetid)
     - [post `/image/generate`](#post-imagegenerate)
     - [patch `/image/favorite/:id`](#patch-imagefavoriteid)
+    - [delete `/image/:id`](#delete-imageid)
 - [Future plans](#future-plans)
 
 ## Technologies Used
@@ -210,13 +211,23 @@ Used to add or remove image from user's favorite list
 
 **Output**: Success or error response
 
+#### delete `/image/:id`
+
+Used to delete a generated image. Only Menbers and Admin can delete  
+**Verification**: Required  
+**Input**:
+
+- id: Image ID
+
+**Output**: Success or error response
+
 ## Future plans
 
 - [ ] Fix sendPasswordResetMail to use email instead of user id
 - [ ] Fix image favorite to use body instead of params
 - [ ] Add patch route for account verification
 - [ ] Add route to make image private
-- [ ] Add route to delete self generated image
+- [x] Add route to delete self generated image
 - [ ] Add more image generating services
 - [ ] Add full docker support
 - [ ] Add "How to run locally" guide for both with and without docker

@@ -5,8 +5,11 @@ import { NoImageError } from '../exceptions/image-error';
 import { Model, Resolution, SortBy, SortOrder } from '../config/enums';
 import prisma from './prisma-service';
 import { GeneratorModel, ImageResolution } from '@prisma/client';
+import { FileService } from './file-service';
 
 export class ImageService {
+  private readonly fileService: FileService = new FileService();
+
   saveImage = async (
     userId: number,
     prompt: string,
@@ -196,4 +199,35 @@ export class ImageService {
       }),
     ]);
   };
+
+  async deleteImage(userId: number, imageId: number): Promise<void> {
+    const image = await prisma.generatedImage.findFirst({
+      select: {
+        userId: true,
+        url: true,
+      },
+      where: {
+        id: imageId,
+      },
+    });
+
+    if (!image || image.userId !== userId) throw new NoImageError();
+
+    // Delete from favorite list
+    await prisma.favourite.deleteMany({
+      where: {
+        imageId,
+      },
+    });
+
+    // Delete from image table
+    await prisma.generatedImage.delete({
+      where: {
+        id: imageId,
+      },
+    });
+
+    // Delete file
+    await this.fileService.deleteFile(image.url);
+  }
 }
