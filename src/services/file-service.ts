@@ -49,7 +49,6 @@ export class FileService {
   };
 
   async deleteFile(path: string): Promise<void> {
-    console.log('Deleted' + path);
     const fullPath = `generatedimages/${path}`;
     if (existsSync(fullPath)) {
       await unlink(fullPath);

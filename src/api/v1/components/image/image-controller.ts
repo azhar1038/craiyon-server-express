@@ -117,7 +117,7 @@ export class ImageController {
     }
   };
 
-  async delete(req: CustomRequest, res: Response) {
+  delete = async (req: CustomRequest, res: Response) => {
     const userId = req.userId;
     if (!userId) return res.status(400).json('User ID is missing');
 
@@ -144,5 +144,5 @@ export class ImageController {
       }
       res.status(statusCode).json(msg);
     }
-  }
+  };
 }
