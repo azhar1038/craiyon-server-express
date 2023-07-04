@@ -16,6 +16,7 @@ Currently only OpenAI DALLE has been implemented. I have plans to add more servi
     - [get `/user/`](#get-user)
     - [patch `/user/new-verificaion-token`](#patch-usernew-verificaion-token)
     - [get `/user/verify/:user/:token`](#get-userverifyusertoken)
+    - [patch `/user/verify`](#patch-userverify)
     - [post `/user/password-reset-mail`](#post-userpassword-reset-mail)
     - [patch `/user/reset-password`](#patch-userreset-password)
     - [get `/user/generated-images`](#get-usergenerated-images)
@@ -126,6 +127,17 @@ Used to verify the account for token generated using previous API.
 
 **Output**: Success or Error response
 
+#### patch `/user/verify`
+
+Used to verify the account for token generated using previous API.  
+**Verification**: Not required  
+**Input**:
+
+- user: User ID
+- token: token generated using `/user/new-verificaion-token`
+
+**Output**: Success or Error response
+
 #### post `/user/password-reset-mail`
 
 Used to send password reset mail to registered email  
@@ -214,7 +226,7 @@ Used to add or remove image from user's favorite list
 
 - [x] Fix sendPasswordResetMail to use email instead of user id
 - [x] Fix image favorite to use body instead of params
-- [ ] Add patch route for account verification
+- [x] Add patch route for account verification
 - [ ] Add route to make image private
 - [ ] Add route to delete self generated image
 - [ ] Add more image generating services
