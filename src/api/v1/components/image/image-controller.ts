@@ -113,4 +113,27 @@ export class ImageController {
       res.status(statusCode).json(msg);
     }
   };
+
+  togglePrivate = async (req: CustomRequest, res: Response) => {
+    const userId = req.userId;
+    if (!userId) return res.status(400).json('User ID is missing');
+
+    const imageId = Number(req.body.id);
+    if (Number.isNaN(imageId)) return res.status(400).json('Image ID is missing');
+
+    try {
+      const action = await this.imageService.toggleImagePrivate(userId, imageId);
+      res.json(action);
+    } catch (error) {
+      let msg = 'Failed to update images state';
+      let statusCode = 500;
+      if (error instanceof NoImageError) {
+        statusCode = 404;
+        msg = error.message;
+      } else {
+        logger.error(error);
+      }
+      res.status(statusCode).json(msg);
+    }
+  };
 }
