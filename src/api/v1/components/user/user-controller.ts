@@ -86,8 +86,8 @@ export class UserController {
   };
 
   verifyAccount = async (req: Request, res: Response) => {
-    const userId = Number(req.params.user);
-    const verificationToken = req.params.token;
+    const userId = Number(req.params.user ?? req.body.user);
+    const verificationToken = req.params.token ?? req.body.token;
 
     if (Number.isNaN(userId) || !verificationToken) return res.status(400).json('Invalid link');
 
@@ -109,17 +109,15 @@ export class UserController {
     }
   };
 
-  // TODO: Use user mail and not id
   sendPasswordResetMail = async (req: Request, res: Response) => {
+    const email = req.body.email;
+    if (!email) return res.status(400).json('Missing email');
     try {
-      const userId = Number(req.body.userId);
-      if (Number.isNaN(userId)) throw new UserDoesNotExistsError();
-
       let handleUrl: string = req.body.handleUrl ?? `${env.DOMAIN}/api/v1/user/verify-password-reset-token/`;
-      const user: UserModel = await this.userService.getUser(userId);
+      const userId: number = await this.userService.getIdFromEmail(email);
       const newToken = await this.userService.updateVerificationToken(userId);
       handleUrl += `${userId}/${newToken}`;
-      this.mailService.sendPasswordResetMail(user.email, handleUrl);
+      this.mailService.sendPasswordResetMail(email, handleUrl);
       res.json('Sent password reset mail');
     } catch (error) {
       let statusCode = 500;
