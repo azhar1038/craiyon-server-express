@@ -200,6 +200,31 @@ export class ImageService {
     ]);
   };
 
+  async toggleImagePrivate(userId: number, imageId: number): Promise<string> {
+    const image = await prisma.generatedImage.findFirst({
+      select: {
+        userId: true,
+        isPrivate: true,
+      },
+      where: {
+        id: imageId,
+      },
+    });
+
+    if (!image || image.userId !== userId) throw new NoImageError();
+
+    await prisma.generatedImage.update({
+      where: {
+        id: imageId,
+      },
+      data: {
+        isPrivate: !image.isPrivate,
+      },
+    });
+
+    return `Image is now ${image.isPrivate ? 'Public' : 'Private'}`;
+  }
+
   async deleteImage(userId: number, imageId: number): Promise<void> {
     const image = await prisma.generatedImage.findFirst({
       select: {
