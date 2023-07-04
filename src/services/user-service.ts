@@ -76,6 +76,20 @@ export class UserService {
     };
   }
 
+  async getIdFromEmail(email: string): Promise<number> {
+    const user = await prisma.user.findFirst({
+      select: {
+        id: true,
+      },
+      where: {
+        email,
+      },
+    });
+
+    if (!user) throw new UserDoesNotExistsError();
+    return user.id;
+  }
+
   async isUserVerified(id: number): Promise<boolean> {
     const user = await prisma.user.findFirst({
       select: {

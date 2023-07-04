@@ -212,7 +212,7 @@ Used to add or remove image from user's favorite list
 
 ## Future plans
 
-- [ ] Fix sendPasswordResetMail to use email instead of user id
+- [x] Fix sendPasswordResetMail to use email instead of user id
 - [x] Fix image favorite to use body instead of params
 - [ ] Add patch route for account verification
 - [ ] Add route to make image private
