@@ -88,8 +88,9 @@ export class ImageController {
     const userId = req.userId;
     if (!userId) return res.status(400).json('User ID is missing');
 
+    const imageId = Number(req.body.id);
+    if (Number.isNaN(imageId)) return res.status(400).json('Image ID is missing');
     try {
-      const imageId = Number(req.body.id);
       const isFavorite = await this.imageService.isFavorite(userId, imageId);
       let msg = '';
       if (isFavorite) {
