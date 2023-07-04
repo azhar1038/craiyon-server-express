@@ -26,6 +26,7 @@ Currently only OpenAI DALLE has been implemented. I have plans to add more servi
     - [post `/image/generate`](#post-imagegenerate)
     - [patch `/image/favorite/:id`](#patch-imagefavoriteid)
     - [patch `/image/private`](#patch-imageprivate)
+    - [delete `/image/:id`](#delete-imageid)
 - [Future plans](#future-plans)
 
 ## Technologies Used
@@ -225,7 +226,17 @@ Used to add or remove image from user's favorite list
 
 #### patch `/image/private`
 
-Used to toggle private state of an image
+Used to toggle private state of an image  
+**Verification**: Required  
+**Input**:
+
+- id: Image ID
+
+**Output**: Success or error response
+
+#### delete `/image/:id`
+
+Used to delete a generated image. Only Menbers and Admin can delete  
 **Verification**: Required  
 **Input**:
 
@@ -239,7 +250,7 @@ Used to toggle private state of an image
 - [x] Fix image favorite to use body instead of params
 - [x] Add patch route for account verification
 - [x] Add route to make image private
-- [ ] Add route to delete self generated image
+- [x] Add route to delete self generated image
 - [ ] Add more image generating services
 - [ ] Add full docker support
 - [ ] Add "How to run locally" guide for both with and without docker

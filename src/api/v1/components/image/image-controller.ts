@@ -5,10 +5,13 @@ import { ImageService } from '../../../../services/image-service';
 import { logger } from '../../../../services/logger-service';
 import { NoImageError } from '../../../../exceptions/image-error';
 import { Model, Resolution, SortBy, SortOrder, getEnumFromString } from '../../../../config/enums';
+import { UserService } from '../../../../services/user-service';
+import { UserDoesNotExistsError } from '../../../../exceptions/user-error';
 
 export class ImageController {
-  private openaiService = new OpenaiService();
-  private imageService = new ImageService();
+  private readonly imageService = new ImageService();
+  private readonly openaiService = new OpenaiService();
+  private readonly userService = new UserService();
 
   getImage = async (req: CustomRequest, res: Response) => {
     try {
@@ -126,6 +129,35 @@ export class ImageController {
       res.json(action);
     } catch (error) {
       let msg = 'Failed to update images state';
+      let statusCode = 500;
+      if (error instanceof NoImageError) {
+        statusCode = 404;
+        msg = error.message;
+      } else {
+        logger.error(error);
+      }
+      res.status(statusCode).json(msg);
+    }
+  };
+
+  delete = async (req: CustomRequest, res: Response) => {
+    const userId = req.userId;
+    if (!userId) return res.status(400).json('User ID is missing');
+
+    const imageId = Number(req.params.id);
+    if (Number.isNaN(imageId)) return res.status(400).json('Image ID is missing');
+
+    try {
+      const user = await this.userService.getUser(userId);
+      if (!user) throw new UserDoesNotExistsError();
+      if (user.role !== 'MEMBER' && user.role !== 'ADMIN') {
+        return res.status(403).json('Only Members and Admin can delete an image');
+      }
+
+      await this.imageService.deleteImage(userId, imageId);
+      res.json('Image has been deleted');
+    } catch (error) {
+      let msg = 'Failed to delete images';
       let statusCode = 500;
       if (error instanceof NoImageError) {
         statusCode = 404;

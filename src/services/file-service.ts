@@ -1,5 +1,6 @@
 import { randomBytes } from 'crypto';
-import { mkdir, writeFile, access } from 'fs';
+import { mkdir, writeFile, access, existsSync } from 'fs';
+import { unlink } from 'fs/promises';
 import { join } from 'path';
 
 export class FileService {
@@ -46,4 +47,11 @@ export class FileService {
       });
     });
   };
+
+  async deleteFile(path: string): Promise<void> {
+    const fullPath = `generatedimages/${path}`;
+    if (existsSync(fullPath)) {
+      await unlink(fullPath);
+    }
+  }
 }

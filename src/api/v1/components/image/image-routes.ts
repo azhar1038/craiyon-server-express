@@ -18,5 +18,6 @@ export class ImageRoutes implements ComponentRoutes<ImageController> {
     this.router.post('/generate', authenticate, verified, this.controller.generateImage);
     this.router.patch('/favorite', authenticate, this.controller.favorite);
     this.router.patch('/private', authenticate, this.controller.togglePrivate);
+    this.router.delete('/:id', authenticate, this.controller.delete);
   }
 }
