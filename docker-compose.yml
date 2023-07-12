@@ -2,16 +2,32 @@ version: '3.8'
 services:
   db:
     image: mysql
+    container_name: craiyon-db
     restart: always
     environment:
       MYSQL_DATABASE: 'craiyon'
       MYSQL_ROOT_PASSWORD: 'password'
     ports:
       - '3306:3306'
-    expose:
-      - 3306
     volumes:
       - mydb:/var/lib/mysql
 
+  server:
+    build: .
+    container_name: craiyon-server
+    ports:
+      - 8080:8080
+    depends_on:
+      - db
+    environment:
+      - PORT=8080
+      - DATABASE_URL=mysql://root:password@craiyon-db:3306/craiyon
+      - DOMAIN=http://localhost:8080
+
+    volumes:
+      - .:/app
+      - nodeModules:/app/node_modules
+
 volumes:
-  mydb:
+  mydb: {}
+  nodeModules: {}
